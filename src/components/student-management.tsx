@@ -32,6 +32,7 @@ export function StudentManagement({ centerId }: StudentManagementProps) {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [courseGroup, setCourseGroup] = useState("");
     const [studentCode, setStudentCode] = useState("");
     const [department, setDepartment] = useState("");
@@ -87,8 +88,55 @@ export function StudentManagement({ centerId }: StudentManagementProps) {
         }
     }, [centerId, fetchStudents]);
 
+    const [invitationLink, setInvitationLink] = useState<string | null>(null);
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [inviteDepartment, setInviteDepartment] = useState("");
+    const [inviteCourseGroup, setInviteCourseGroup] = useState("");
+    const [inviteHours, setInviteHours] = useState("48");
+    const [generatingLink, setGeneratingLink] = useState(false);
+
+    const handleGenerateLink = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setGeneratingLink(true);
+        try {
+            const res = await fetch("/api/students/invite", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    department: inviteDepartment,
+                    courseGroup: inviteCourseGroup,
+                    expiresInHours: parseInt(inviteHours)
+                }),
+            });
+            const data = await res.json();
+            if (res.ok && data.token) {
+                const origin = window.location.origin;
+                setInvitationLink(`${origin}/register-student?token=${data.token}`);
+            } else {
+                alert(data.error || "Error al generar enlace");
+            }
+        } catch (error) {
+            console.error("Error al generar enlace", error);
+            alert("Error al generar enlace");
+        } finally {
+            setGeneratingLink(false);
+        }
+    };
+
     const handleEnrollStudent = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (password !== confirmPassword) {
+            setFormError("Las contraseñas no coinciden.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setFormError("Por favor, introduce un correo electrónico válido.");
+            return;
+        }
+
         setSubmitting(true);
         setFormError(null);
         setFormSuccess(null);
@@ -177,13 +225,21 @@ export function StudentManagement({ centerId }: StudentManagementProps) {
                         {t('students.description')}
                     </p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
-                >
-                    <Plus className="h-4 w-4" />
-                    {t('students.enrollBtn')}
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setIsInviteModalOpen(true)}
+                        className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-semibold shadow-sm hover:bg-muted active:scale-95 transition-all duration-200"
+                    >
+                        Generar enlace
+                    </button>
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
+                    >
+                        <Plus className="h-4 w-4" />
+                        {t('students.enrollBtn')}
+                    </button>
+                </div>
             </div>
 
             {/* Barra de búsqueda */}
@@ -258,6 +314,106 @@ export function StudentManagement({ centerId }: StudentManagementProps) {
                     </div>
                 )}
             </div>
+
+            {/* Modal para Generar Enlace */}
+            {isInviteModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg rounded-xl bg-card p-6 shadow-xl ring-1 ring-border/50 relative">
+                        <button
+                            onClick={() => { setIsInviteModalOpen(false); setInvitationLink(null); }}
+                            className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+
+                        <div className="mb-6">
+                            <h3 className="text-xl font-bold tracking-tight">Generar Enlace de Registro</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Crea un enlace temporal para que los alumnos se registren solos en tu centro.
+                            </p>
+                        </div>
+
+                        {!invitationLink ? (
+                            <form onSubmit={handleGenerateLink} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium leading-6">Departamento (opcional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ej: Enfermería"
+                                        value={inviteDepartment}
+                                        onChange={(e) => setInviteDepartment(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-0 py-1.5 px-3 bg-background ring-1 ring-inset ring-border text-sm focus:ring-2 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium leading-6">Grupo / Curso (opcional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ej: 1º TES - Grupo A"
+                                        value={inviteCourseGroup}
+                                        onChange={(e) => setInviteCourseGroup(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-0 py-1.5 px-3 bg-background ring-1 ring-inset ring-border text-sm focus:ring-2 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium leading-6">Caducidad</label>
+                                    <select
+                                        value={inviteHours}
+                                        onChange={(e) => setInviteHours(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-0 py-1.5 px-3 bg-background ring-1 ring-inset ring-border text-sm focus:ring-2 focus:ring-primary"
+                                    >
+                                        <option value="24">24 horas</option>
+                                        <option value="48">48 horas</option>
+                                        <option value="168">1 semana</option>
+                                    </select>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsInviteModalOpen(false)}
+                                        className="rounded-md px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={generatingLink}
+                                        className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+                                    >
+                                        {generatingLink ? "Generando..." : "Generar enlace"}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="p-4 rounded-lg bg-muted text-sm break-all font-mono">
+                                    {invitationLink}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    Copia este enlace y compártelo con tus alumnos. Podrán registrarse y serán añadidos automáticamente a este grupo.
+                                </p>
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(invitationLink);
+                                            alert("Enlace copiado al portapapeles");
+                                        }}
+                                        className="rounded-md bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground hover:bg-secondary/80 transition-all"
+                                    >
+                                        Copiar enlace
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsInviteModalOpen(false); setInvitationLink(null); }}
+                                        className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all"
+                                    >
+                                        Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Modal de Inscripción de Alumno */}
             {isModalOpen && (
@@ -335,6 +491,26 @@ export function StudentManagement({ centerId }: StudentManagementProps) {
                                     />
                                 </div>
                             </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium leading-6">
+                                        Repetir Contraseña <span className="text-destructive">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        required
+                                        placeholder="Repite la contraseña"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className={`mt-1 block w-full rounded-md border-0 py-1.5 px-3 bg-background ring-1 ring-inset ${confirmPassword && password !== confirmPassword ? "ring-destructive focus:ring-destructive" : "ring-border focus:ring-primary"} text-sm focus:ring-2`}
+                                    />
+                                    {confirmPassword && password !== confirmPassword && (
+                                        <p className="text-xs text-destructive mt-1">Las contraseñas no coinciden</p>
+                                    )}
+                                </div>
+                                <div className="hidden sm:block"></div>
+                            </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
@@ -387,7 +563,7 @@ export function StudentManagement({ centerId }: StudentManagementProps) {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={submitting}
+                                    disabled={submitting || (confirmPassword !== "" && password !== confirmPassword)}
                                     className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
                                 >
                                     {submitting ? t('students.enrolling') : t('students.enrollBtn')}

@@ -2,7 +2,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DashboardContent } from "@/components/dashboard-content";
 import { CenterDashboardContent } from "@/components/center-dashboard-content";
 import { StudentDashboardContent } from "@/components/student-dashboard-content";
@@ -29,9 +30,14 @@ export default async function DashboardPage() {
         .single();
 
     const rawRole = profile?.role || user.user_metadata?.role || "centro";
-    const isCentro = String(rawRole).toLowerCase().trim() === "centro";
-    const isProfesor = String(rawRole).toLowerCase().trim() === "profesor";
-    const isAlumno = String(rawRole).toLowerCase().trim() === "alumno";
+    const roleStr = String(rawRole).toLowerCase().trim();
+
+    if (roleStr === "alumno") {
+        return redirect("/access-denied");
+    }
+
+    const isCentro = roleStr === "centro";
+    const isProfesor = roleStr === "profesor";
 
     // Check for an active session for this instructor
     const { data: sessions } = await supabase
@@ -51,10 +57,12 @@ export default async function DashboardPage() {
         <div className="min-h-screen bg-background p-8">
             <header className="flex items-center justify-between mb-8 max-w-[1400px] mx-auto">
                 <div className="flex items-center gap-6">
-                    <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-all">
-                        <ChevronLeft className="w-4 h-4" />
-                        Volver
-                    </Link>
+                    {!isCentro && (
+                        <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:underline transition-all">
+                            <ChevronLeft className="w-4 h-4" />
+                            Volver
+                        </Link>
+                    )}
                     <h1 className="text-3xl font-bold tracking-tight">{dict.navbar.dashboard}</h1>
                 </div>
                 <div className="flex items-center gap-6">
@@ -75,6 +83,11 @@ export default async function DashboardPage() {
                     </Link>
                     <LanguageSelector />
                     <ThemeToggle />
+                    <form action="/auth/signout" method="post">
+                        <Button variant="ghost" size="icon" type="submit" title="Cerrar sesión">
+                            <LogOut className="h-5 w-5" />
+                        </Button>
+                    </form>
                 </div>
             </header>
 
@@ -86,7 +99,6 @@ export default async function DashboardPage() {
                         instructorId={user.id}
                     />
                 )}
-                {isAlumno && <StudentDashboardContent profileId={user.id} />}
             </main>
         </div>
     );

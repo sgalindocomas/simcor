@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Simcor
 
-## Getting Started
+**Simcor** es una plataforma integral de simulación clínica diseñada para transformar el futuro de la formación médica. Proporciona un entorno realista y controlado para la evaluación y seguimiento de escenarios clínicos, conectando eficientemente a centros, profesores y alumnos.
 
-First, run the development server:
+## 🚀 Características Principales
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*   **Monitorización en tiempo real:** Supervisa constantes vitales y permite a los instructores responder a incidentes y modificar parámetros en simulaciones clínicas al instante.
+*   **Evaluación Clínica Estructurada (ECE):** Un sistema completo para la evaluación objetiva y estructurada de las habilidades, toma de decisiones y competencias médicas de los estudiantes.
+*   **Gestión Integral de Centros:** Panel centralizado e intuitivo para administrar centros educativos, roles de usuarios (profesores, alumnos, administradores) y configurar escenarios de simulación.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 💻 Tecnologías
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Este proyecto está construido con una pila tecnológica moderna enfocada en el rendimiento y la escalabilidad:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+*   **Framework:** [Next.js](https://nextjs.org/) (App Router)
+*   **Lenguaje:** TypeScript
+*   **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
+*   **Componentes UI:** [shadcn/ui](https://ui.shadcn.com/)
+*   **Base de datos, Backend y Autenticación:** [Supabase](https://supabase.com/)
+*   **Iconos:** [Lucide React](https://lucide.dev/)
 
-## Learn More
+## 🛠️ Desarrollo Local
 
-To learn more about Next.js, take a look at the following resources:
+### Prerrequisitos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+*   Node.js (v18 o superior)
+*   Un gestor de paquetes como npm, pnpm o yarn
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Instalación
 
-## Deploy on Vercel
+1. Clona el repositorio e ingresa al directorio:
+   ```bash
+   git clone <url-del-repositorio>
+   cd simcor
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Instala las dependencias:
+   ```bash
+   npm install
+   # o pnpm install
+   # o yarn install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Configura las variables de entorno. Crea un archivo `.env.local` en la raíz del proyecto y añade tus credenciales de Supabase:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+   ```
+
+4. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   # o pnpm dev
+   # o yarn dev
+   ```
+
+5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación en funcionamiento.

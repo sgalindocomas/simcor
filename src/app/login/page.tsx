@@ -6,6 +6,10 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/i18n/i18n-context";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -36,35 +40,29 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="flex min-h-screen items-center justify-center p-4 bg-muted/40">
             <div className="absolute top-4 right-4">
                 <ThemeToggle />
             </div>
-            <div className="w-full max-w-md space-y-8 rounded-xl bg-card p-8 shadow-lg ring-1 ring-border/50">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold tracking-tight">{t('login.title')}</h2>
-                    <p className="mt-2 text-sm text-muted-foreground">
+            <Card className="w-full max-w-md border-0 shadow-xl bg-background/60 backdrop-blur-xl sm:border sm:bg-card">
+                <CardHeader className="space-y-1 text-center">
+                    <CardTitle className="text-3xl font-bold tracking-tight">{t('login.title')}</CardTitle>
+                    <CardDescription>
                         {t('login.description')}
-                    </p>
-                </div>
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form className="space-y-4" onSubmit={handleLogin}>
+                        {error && (
+                            <div className="rounded-md bg-destructive/15 p-3 text-sm font-medium text-destructive">
+                                {error}
+                            </div>
+                        )}
 
-                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                    {error && (
-                        <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="space-y-4">
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium leading-6"
-                            >
-                                {t('login.emailLabel')}
-                            </label>
-                            <div className="mt-2">
-                                <input
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">{t('login.emailLabel')}</Label>
+                                <Input
                                     id="email"
                                     name="email"
                                     type="email"
@@ -72,20 +70,13 @@ export default function LoginPage() {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="block w-full rounded-md border-0 py-1.5 px-3 text-foreground bg-background shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                                    placeholder="m@example.com"
                                 />
                             </div>
-                        </div>
 
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium leading-6"
-                            >
-                                {t('login.passwordLabel')}
-                            </label>
-                            <div className="mt-2">
-                                <input
+                            <div className="space-y-2">
+                                <Label htmlFor="password">{t('login.passwordLabel')}</Label>
+                                <Input
                                     id="password"
                                     name="password"
                                     type="password"
@@ -93,33 +84,31 @@ export default function LoginPage() {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full rounded-md border-0 py-1.5 px-3 text-foreground bg-background shadow-sm ring-1 ring-inset ring-border placeholder:text-muted-foreground focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                                 />
                             </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <button
+                        <Button
                             type="submit"
+                            className="w-full mt-6"
                             disabled={loading}
-                            className="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-primary-foreground shadow-sm hover:bg-primary/90 hover:-translate-y-0.5 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 transition-all duration-200"
                         >
                             {loading ? t('login.signingIn') : t('login.signInBtn')}
-                        </button>
-                    </div>
-                </form>
-
-                <p className="mt-10 text-center text-sm text-muted-foreground">
-                    {t('login.noAccount')}{" "}
-                    <Link
-                        href="/register"
-                        className="font-semibold leading-6 text-primary hover:text-primary/80 hover:underline transition-all"
-                    >
-                        {t('login.signUpLink')}
-                    </Link>
-                </p>
-            </div>
+                        </Button>
+                    </form>
+                </CardContent>
+                <CardFooter className="flex justify-center border-t p-6">
+                    <p className="text-sm text-muted-foreground">
+                        {t('login.noAccount')}{" "}
+                        <Link
+                            href="/register"
+                            className="font-semibold text-primary hover:text-primary/80 hover:underline transition-all"
+                        >
+                            {t('login.signUpLink')}
+                        </Link>
+                    </p>
+                </CardFooter>
+            </Card>
         </div>
     );
 }

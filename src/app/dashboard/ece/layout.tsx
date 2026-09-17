@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSelector } from "@/components/language-selector";
-import { ClipboardList, Users, Package, ChevronLeft } from "lucide-react";
+import { ClipboardList, Users, Package, ChevronLeft, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default async function ECELayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -45,6 +46,11 @@ export default async function ECELayout({ children }: { children: React.ReactNod
                     <div className="flex items-center gap-4">
                         <LanguageSelector />
                         <ThemeToggle />
+                        <form action="/auth/signout" method="post">
+                            <Button variant="ghost" size="icon" type="submit" title="Cerrar sesión">
+                                <LogOut className="h-5 w-5" />
+                            </Button>
+                        </form>
                     </div>
                 </div>
 

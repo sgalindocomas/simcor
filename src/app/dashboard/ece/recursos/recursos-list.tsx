@@ -18,7 +18,9 @@ type Recurs = {
 export function RecursosList({ initialRecursos, centroId }: { initialRecursos: Recurs[], centroId: string | null }) {
     const [recursos, setRecursos] = useState<Recurs[]>(initialRecursos);
     const [isCreating, setIsCreating] = useState(false);
-    const [codiRecurs, setCodiRecurs] = useState("");
+    const [prefix, setPrefix] = useState("R");
+    const [rangeStart, setRangeStart] = useState("");
+    const [rangeEnd, setRangeEnd] = useState("");
     const [loading, setLoading] = useState(false);
     
     // Estados de edición
@@ -29,19 +31,33 @@ export function RecursosList({ initialRecursos, centroId }: { initialRecursos: R
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const start = parseInt(rangeStart);
+        const end = parseInt(rangeEnd);
+        
+        if (isNaN(start) || isNaN(end) || start > end) {
+            alert("Rango no válido");
+            return;
+        }
+
         setLoading(true);
         try {
+            const inserts = [];
+            for (let i = start; i <= end; i++) {
+                inserts.push({ codi_recurs: `${prefix}${i}`, centro_id: centroId });
+            }
+
             const { data, error } = await supabase
                 .from("recurs")
-                .insert([{ codi_recurs: codiRecurs, centro_id: centroId }])
-                .select()
-                .single();
+                .insert(inserts)
+                .select();
 
             if (error) throw error;
             if (data) {
-                setRecursos([data, ...recursos]);
+                setRecursos([...data, ...recursos]);
                 setIsCreating(false);
-                setCodiRecurs("");
+                setRangeStart("");
+                setRangeEnd("");
             }
         } catch (err: any) {
             alert("Error: " + err.message);
@@ -100,15 +116,25 @@ export function RecursosList({ initialRecursos, centroId }: { initialRecursos: R
                             <CardTitle>Crear Recurso</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-2 max-w-sm">
-                                <Label>Código de Recurso</Label>
-                                <Input required value={codiRecurs} onChange={(e) => setCodiRecurs(e.target.value)} placeholder="Ej. SVA-01" />
+                            <div className="flex flex-col sm:flex-row gap-4 max-w-2xl">
+                                <div className="space-y-2 flex-1">
+                                    <Label>Prefijo (ej. R)</Label>
+                                    <Input required value={prefix} onChange={(e) => setPrefix(e.target.value)} placeholder="Ej. R" />
+                                </div>
+                                <div className="space-y-2 flex-1">
+                                    <Label>Rango Inicial</Label>
+                                    <Input type="number" required value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} placeholder="Ej. 411" />
+                                </div>
+                                <div className="space-y-2 flex-1">
+                                    <Label>Rango Final</Label>
+                                    <Input type="number" required value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} placeholder="Ej. 435" />
+                                </div>
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-start gap-3 pt-4 border-t mt-4">
                             <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>Cancelar</Button>
-                            <Button type="submit" disabled={loading || !codiRecurs}>
-                                {loading ? "Guardando..." : "Guardar Recurso"}
+                            <Button type="submit" disabled={loading || !rangeStart || !rangeEnd}>
+                                {loading ? "Generando..." : "Generar Recursos"}
                             </Button>
                         </CardFooter>
                     </form>
